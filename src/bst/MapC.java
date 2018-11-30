@@ -3,17 +3,19 @@
 
 import java.util.NoSuchElementException;
 
-public class MapC implements Map<K extends Comparable<K>, V> {
+public class MapC<K extends Comparable<K>, V> implements Map<K, V> {
 
-    private K key;
-    private V val;
-    private Node left, right;
+    private class Node {
+        private K key;
+        private V val;
+        private Node left, right;
 
-    private Node(K key, V val, Node left, Node right) {
-        this.key = key;
-        this.val = val;
-        this.left = left;
-        this.right = right;
+        Node(K key, V val, Node left, Node right) {
+            this.key = key;
+            this.val = val;
+            this.left = left;
+            this.right = right;
+        }
     }
 
     private Node root;
@@ -89,7 +91,7 @@ public class MapC implements Map<K extends Comparable<K>, V> {
         return sb.toString();
     }
 
-    private void stringHelper(Node node, Stringbuilder sb) {
+    private void stringHelper(Node node, StringBuilder sb) {
         if (isLeaf(node)) sb.append(node.key).append("\n");
         else {
             if (node.left != null) stringHelper(node.left, sb);
@@ -107,8 +109,8 @@ public class MapC implements Map<K extends Comparable<K>, V> {
         int comp = key.compareTo(node.key);
         if (node == null)       return null;
         else if (comp == 0)     return successor(node);
-        else if (comp > 0)      return floorHelper(node.right);
-        else                    return floorHelper(node.left);
+        else if (comp > 0)      return floorHelper(node.right, key);
+        else                    return floorHelper(node.left, key);
     }
 
     private K successor(Node node) {
