@@ -11,5 +11,9 @@ public interface Map<K extends Comparable<K>, V> {
     K min();
     String toString();
     K floor(K key);
+    K select(int n);
+    int rank(K key);
+    Map<K, V> deleteMin();
+    Map<K, V> delete(K key);
 
 }
