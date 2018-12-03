@@ -5,7 +5,7 @@ import java.util.NoSuchElementException;
 import java.util.List;
 import java.util.ArrayList;
 
-public class MapBST<K extends Comparable<K>, V> implements Map<K, V> {
+public class BST<K extends Comparable<K>, V> implements Map<K, V> {
 
     private class Node {
         private K key;
@@ -23,7 +23,7 @@ public class MapBST<K extends Comparable<K>, V> implements Map<K, V> {
     private Node root;
     private int size;
 
-    public MapBST() {
+    public BST() {
         this.root = null;
         this.size = 0;
     }
@@ -248,8 +248,8 @@ public class MapBST<K extends Comparable<K>, V> implements Map<K, V> {
 
     public static void main(String[] args) {
         /* Unit Testing */
-        Map<Integer, String> m1 = new MapBST<Integer, String>();
-        Map<String, Integer> m2 = new MapBST<String, Integer>();
+        Map<Integer, String> m1 = new BST<Integer, String>();
+        Map<String, Integer> m2 = new BST<String, Integer>();
 
         // put(K key, V val)
         Map<Integer, String> testMapInt;
