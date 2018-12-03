@@ -191,7 +191,16 @@ public class MapC<K extends Comparable<K>, V> implements Map<K, V> {
         if (!check) {
             if (comp > 0)           deleteHelper(root.right, root, key);
             else if (comp < 0)      deleteHelper(root.left, root, key);
-            else                    root = null;
+            else {
+                Node s = successor(root);
+                if (s != null) {
+                    s.right = root.right;
+                    if (root.left.key.compareTo(s.key) == 0)        s.left = root.left.left;
+                    else                                            s.left = root.left;
+                    eliminateSuccessor(root.left, root, 0);
+                }
+                root = s;
+            }
         }
         return this;
     }
