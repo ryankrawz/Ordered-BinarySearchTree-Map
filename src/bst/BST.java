@@ -1,4 +1,4 @@
-// Immutable BST-Based Ordered Map ADT
+// Binary Search Tree ADT
 // Ryan Krawczyk
 
 import java.util.NoSuchElementException;
@@ -7,25 +7,12 @@ import java.util.ArrayList;
 
 public class BST<K extends Comparable<K>, V> implements Map<K, V> {
 
-    private class Node {
-        private K key;
-        private V val;
-        private Node left, right;
-
-        Node(K key, V val, Node left, Node right) {
-            this.key = key;
-            this.val = val;
-            this.left = left;
-            this.right = right;
-        }
-    }
-
-    private Node root;
+    private Node<K, V> root;
     private int size;
 
-    public BST() {
-        this.root = null;
-        this.size = 0;
+    public BST(Node<K, V> root, int size) {
+        this.root = root;
+        this.size = size;
     }
 
     public V get(K key) {
@@ -34,33 +21,33 @@ public class BST<K extends Comparable<K>, V> implements Map<K, V> {
     }
 
     // Parses tree using compareTo until matching key is located, returns null if key does not exist
-    private V getHelper(Node node, K key) {
+    private V getHelper(Node<K, V> node, K key) {
         if (node == null) return null;
         else {
-            int comp = key.compareTo(node.key);
-            if (comp == 0)          return node.val;
-            else if (comp > 0)      return getHelper(node.right, key);
-            else                    return getHelper(node.left, key);
+            int comp = key.compareTo(node.getKey());
+            if (comp == 0)          return node.getVal();
+            else if (comp > 0)      return getHelper(node.getRight(), key);
+            else                    return getHelper(node.getLeft(), key);
         }
     }
 
     public Map<K, V> put(K key, V val) {
         size++;
-        if (root == null)       root = new Node(key, val, null, null);
+        if (root == null)       root = new NodeC<K, V>(key, val, null, null);
         else                    putHelper(root, key, val);
         return this;
     }
 
     // Parses tree using compareTo until available spot (indicated by null) is located
-    private void putHelper(Node node, K key, V val) {
-        int comp = key.compareTo(node.key);
-        if (comp == 0) node.val = val;
+    private void putHelper(Node<K, V> node, K key, V val) {
+        int comp = key.compareTo(node.getKey());
+        if (comp == 0) node.setVal(val);
         else if (comp > 0) {
-            if (node.right == null)     node.right = new Node(key, val, null, null);
-            else                        putHelper(node.right, key, val);
+            if (node.getRight() == null)    node.setRight(new NodeC<K, V>(key, val, null, null));
+            else                            putHelper(node.getRight(), key, val);
         } else {
-            if (node.left == null)      node.left = new Node(key, val, null, null);
-            else                        putHelper(node.left, key, val);
+            if (node.getLeft() == null)     node.setLeft(new NodeC<K, V>(key, val, null, null));
+            else                            putHelper(node.getLeft(), key, val);
         }
     }
 
@@ -71,19 +58,21 @@ public class BST<K extends Comparable<K>, V> implements Map<K, V> {
 
     public int size() { return size; }
 
+    public Node<K, V> root() { return root; }
+
     public boolean contains(K key) {
         checkEmpty();
         return containHelper(root, key);
     }
 
     // Parses tree using compareTo, returns false if entire branch has been visited
-    private boolean containHelper(Node node, K key) {
+    private boolean containHelper(Node<K, V> node, K key) {
         if (node == null) return false;
         else {
-            int comp = key.compareTo(node.key);
+            int comp = key.compareTo(node.getKey());
             if (comp == 0)          return true;
-            else if (comp > 0)      return containHelper(node.right, key);
-            else                    return containHelper(node.left, key);
+            else if (comp > 0)      return containHelper(node.getRight(), key);
+            else                    return containHelper(node.getLeft(), key);
         }
     }
 
@@ -93,9 +82,9 @@ public class BST<K extends Comparable<K>, V> implements Map<K, V> {
     }
 
     // Recursively walks left to locate min (employs relational invariant)
-    private K minHelper(Node node) {
-        if (node.left == null)      return node.key;
-        else                        return minHelper(node.left);
+    private K minHelper(Node<K, V> node) {
+        if (node.getLeft() == null)     return node.getKey();
+        else                            return minHelper(node.getLeft());
     }
 
     public String toString() {
@@ -108,12 +97,12 @@ public class BST<K extends Comparable<K>, V> implements Map<K, V> {
     }
 
     // In-order traversal of tree, appends key and value
-    private void stringHelper(Node node, StringBuilder sb) {
-        if (isLeaf(node)) sb.append(node.key).append(" --> ").append(node.val).append("\n");
+    private void stringHelper(Node<K, V> node, StringBuilder sb) {
+        if (isLeaf(node)) sb.append(node.getKey()).append(" --> ").append(node.getVal()).append("\n");
         else {
-            if (node.left != null) stringHelper(node.left, sb);
-            sb.append(node.key).append(" --> ").append(node.val).append("\n");
-            if (node.right != null) stringHelper(node.right, sb);
+            if (node.getLeft() != null) stringHelper(node.getLeft(), sb);
+            sb.append(node.getKey()).append(" --> ").append(node.getVal()).append("\n");
+            if (node.getRight() != null) stringHelper(node.getRight(), sb);
         }
     }
 
@@ -123,26 +112,26 @@ public class BST<K extends Comparable<K>, V> implements Map<K, V> {
     }
 
     // Parses tree using compareTo, calls successor on input key
-    private K floorHelper(Node node, K key) {
+    private K floorHelper(Node<K, V> node, K key) {
         if (node == null) return null;
         else {
-            int comp = key.compareTo(node.key);
-            if (comp == 0)          return successor(node).key;
-            else if (comp > 0)      return floorHelper(node.right, key);
-            else                    return floorHelper(node.left, key);
+            int comp = key.compareTo(node.getKey());
+            if (comp == 0)          return successor(node).getKey();
+            else if (comp > 0)      return floorHelper(node.getRight(), key);
+            else                    return floorHelper(node.getLeft(), key);
         }
     }
 
     // Returns the maximum key of the left field of the input node
-    private Node successor(Node node) {
-        Node s = node.left == null ? null : max(node.left);
+    private Node<K, V> successor(Node<K, V> node) {
+        Node<K, V> s = node.getLeft() == null ? null : max(node.getLeft());
         return s;
     }
 
     // Recursively walks right to locate max (employs relational invariant)
-    private Node max(Node node) {
-        if (node.right == null)     return node;
-        else                        return max(node.right);
+    private Node<K, V> max(Node<K, V> node) {
+        if (node.getRight() == null)        return node;
+        else                                return max(node.getRight());
     }
 
     // Retrieves index n - 1 from list of keys
@@ -162,42 +151,42 @@ public class BST<K extends Comparable<K>, V> implements Map<K, V> {
     }
 
     // Generates list of keys using in-order traversal
-    private void indexHelper(Node node, List<K> l) {
-        if (isLeaf(node)) l.add(node.key);
+    private void indexHelper(Node<K, V> node, List<K> l) {
+        if (isLeaf(node)) l.add(node.getKey());
         else {
-            if (node.left != null) indexHelper(node.left, l);
-            l.add(node.key);
-            if (node.right != null) indexHelper(node.right, l);
+            if (node.getLeft() != null) indexHelper(node.getLeft(), l);
+            l.add(node.getKey());
+            if (node.getRight() != null) indexHelper(node.getRight(), l);
         }
     }
 
     public Map<K, V> deleteMin() {
         checkEmpty();
-        if (root.left == null)      root = null;
-        else                        deleteMinHelper(root.left, root);
+        if (root.getLeft() == null)         root = null;
+        else                                deleteMinHelper(root.getLeft(), root);
         return this;
     }
 
     // Locates minimum with recursive walk left, resets trailing pointer to null
-    private void deleteMinHelper(Node node1, Node node2) {
-        if (node1.left == null)     node2.left = node1.right;
-        else                        deleteMinHelper(node1.left, node2.left);
+    private void deleteMinHelper(Node<K, V> node1, Node<K, V> node2) {
+        if (node1.getLeft() == null)        node2.setLeft(node1.getRight());
+        else                                deleteMinHelper(node1.getLeft(), node2.getLeft());
     }
 
     public Map<K, V> delete(K key) {
         checkEmpty();
-        int comp = key.compareTo(root.key);
-        boolean check = (comp > 0 && root.right == null) || (comp < 0 && root.left == null);
+        int comp = key.compareTo(root.getKey());
+        boolean check = (comp > 0 && root.getRight() == null) || (comp < 0 && root.getLeft() == null);
         if (!check) {
-            if (comp > 0)           deleteHelper(root.right, root, key);
-            else if (comp < 0)      deleteHelper(root.left, root, key);
+            if (comp > 0)           deleteHelper(root.getRight(), root, key);
+            else if (comp < 0)      deleteHelper(root.getLeft(), root, key);
             else {
-                Node s = successor(root);
+                Node<K, V> s = successor(root);
                 if (s != null) {
-                    s.right = root.right;
-                    if (root.left.key.compareTo(s.key) == 0)        s.left = root.left.left;
-                    else                                            s.left = root.left;
-                    eliminateSuccessor(root.left, root, 0);
+                    s.setRight(root.getRight());
+                    if (root.getLeft().getKey().compareTo(s.getKey()) == 0)     s.setLeft(root.getLeft().getLeft());
+                    else                                                        s.setLeft(root.getLeft());
+                    eliminateSuccessor(root.getLeft(), root, 0);
                 }
                 root = s;
             }
@@ -206,92 +195,44 @@ public class BST<K extends Comparable<K>, V> implements Map<K, V> {
     }
 
     // Locates input key using compareTo, reconnects trailing pointer to nodes following input key
-    private void deleteHelper(Node node1, Node node2, K key) {
-        int comp1 = key.compareTo(node1.key);
-        int comp2 = key.compareTo(node2.key);
+    private void deleteHelper(Node<K, V> node1, Node<K, V> node2, K key) {
+        int comp1 = key.compareTo(node1.getKey());
+        int comp2 = key.compareTo(node2.getKey());
         if (comp1 == 0) {
-            Node s = successor(node1);
+            Node<K, V> s = successor(node1);
             if (s != null) {
-                s.right = node1.right;
-                s.left = node1.left;
+                s.setRight(node1.getRight());
+                s.setLeft(node1.getLeft());
             }
             if (comp2 > 0) {
-                if (s == null) node2.right = node1.right;
+                if (s == null) node2.setRight(node1.getRight());
                 else {
-                    eliminateSuccessor(node2.right.left, node2.right, 0);
-                    node2.right = s;
+                    eliminateSuccessor(node2.getRight().getLeft(), node2.getRight(), 0);
+                    node2.setRight(s);
                 }
             } else {
-                if (s == null) node2.left = node1.right;
+                if (s == null) node2.setLeft(node1.getRight());
                 else {
-                    eliminateSuccessor(node2.left.left, node2.left, 0);
-                    node2.left = s;
+                    eliminateSuccessor(node2.getLeft().getLeft(), node2.getLeft(), 0);
+                    node2.setLeft(s);
                 }
             }
             return;
         }
-        else if (comp1 > 0 && node1.right != null)      deleteHelper(node1.right, node1, key);
-        else if (comp1 < 0 && node1.left != null)       deleteHelper(node1.left, node1, key);
-        else                                            return;
+        else if (comp1 > 0 && node1.getRight() != null)     deleteHelper(node1.getRight(), node1, key);
+        else if (comp1 < 0 && node1.getLeft() != null)      deleteHelper(node1.getLeft(), node1, key);
+        else                                                return;
     }
 
     // Sets pointers to successor of node in deleteHelper equal to null once successor is in place of deleted key
-    private void eliminateSuccessor(Node node1, Node node2, int c) {
-        if (node1.right == null && c == 0) node2.left = node1.left;
+    private void eliminateSuccessor(Node<K, V> node1, Node<K, V> node2, int c) {
+        if (node1.getRight() == null && c == 0) node2.setLeft(node1.getLeft());
         else {
-            if (node1.right == null)        node2.right = node1.right;
-            else                            eliminateSuccessor(node1.right, node1, c + 1);
+            if (node1.getRight() == null)   node2.setRight(node1.getRight());
+            else                            eliminateSuccessor(node1.getRight(), node1, c + 1);
         }
     }
 
-    private boolean isLeaf(Node node) { return node.left == null && node.right == null; }
-
-    public static void main(String[] args) {
-        /* Unit Testing */
-        Map<Integer, String> m1 = new BST<Integer, String>();
-        Map<String, Integer> m2 = new BST<String, Integer>();
-
-        // put(K key, V val)
-        Map<Integer, String> testMapInt;
-        Map<String, Integer> testMapString;
-        testMapInt = m1.put(3, "C").put(2, "B").put(5, "E").put(4, "D").put(1, "A").put(7, "G").put(6, "F");
-        testMapString = m2.put("C", 3).put("A", 1).put("G", 7).put("B", 2).put("F", 6).put("D", 4).put("E", 5);
-        System.out.format("%ntestMapInt after put:%s", testMapInt.toString());
-        System.out.format("testMapString after put:%s", testMapString.toString());
-
-        // get(K key)
-        System.out.format("Getting key 4 from testMapInt: %s", testMapInt.get(4));
-        System.out.format("%nGetting key B from testMapString: %d%n%n", testMapString.get("B"));
-
-        // contains(K key)
-        System.out.format("testMapInt contains 1: %b", testMapInt.contains(1));
-        System.out.format("%ntestMapInt contains 8: %b", testMapInt.contains(8));
-        System.out.format("%ntestMapString contains A: %b", testMapString.contains("A"));
-        System.out.format("%ntestMapString contains H: %b%n%n", testMapString.contains("H"));
-
-        // min()
-        System.out.format("Min of testMapInt: %d", testMapInt.min());
-        System.out.format("%nMin of testMapString: %s%n%n", testMapString.min());
-
-        // floor(K key)
-        System.out.format("Floor of 7 in testMapInt: %d", testMapInt.floor(7));
-        System.out.format("%nFloor of G in testMapString: %s%n%n", testMapString.floor("G"));
-
-        // select(int n)
-        System.out.format("Selecting rank 5 from testMapInt: %d", testMapInt.select(5));
-        System.out.format("%nSelecting rank 5 from testMapString: %s%n%n", testMapString.select(5));
-
-        // rank(K key)
-        System.out.format("Rank of key 3 from testMapInt: %d", testMapInt.rank(3));
-        System.out.format("%nRank of key C from testMapString: %s%n%n", testMapString.rank("C"));
-
-        // deleteMin()
-        System.out.format("After deleting min of testMapInt:%s", testMapInt.deleteMin().toString());
-        System.out.format("After deleting min of testMapString:%s", testMapString.deleteMin().toString());
-
-        // delete(K key)
-        System.out.format("After deleting key 6 from testMapInt:%s", testMapInt.delete(6).toString());
-        System.out.format("After deleting key F from testMapString:%s", testMapString.delete("F").toString());
-    }
+    private boolean isLeaf(Node<K, V> node) { return node.getLeft() == null && node.getRight() == null; }
 
 }

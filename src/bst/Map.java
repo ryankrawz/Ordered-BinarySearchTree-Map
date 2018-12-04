@@ -7,6 +7,7 @@ public interface Map<K extends Comparable<K>, V> {
     Map<K, V> put(K key, V val);
     boolean isEmpty();
     int size();
+    Node root();
     boolean contains(K key);
     K min();
     String toString();
