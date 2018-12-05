@@ -4,10 +4,14 @@
 public interface Map<K extends Comparable<K>, V> {
 
     V get(K key);
-    Map<K, V> put(K key, V val);
+    Map<K, V> put(K key, V val, Map<K, V> bst);
+    K getKey();
+    V getVal();
+    Map<K, V> getLeft();
+    Map<K, V> getRight();
+    boolean equals(Map<K, V> other);
     boolean isEmpty();
     int size();
-    Node root();
     boolean contains(K key);
     K min();
     String toString();
