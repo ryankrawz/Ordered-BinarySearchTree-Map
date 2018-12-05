@@ -7,7 +7,7 @@ public class EmptyMap<K extends Comparable<K>, V> implements Map<K, V> {
 
     public V get(K key) { return null; }
 
-    public Map<K, V> put(K key, V val, Map<K, V> bst) { return new MapC<K, V>(key, val, this, this); }
+    public Map<K, V> put(K key, V val) { return new MapC<K, V>(key, val, this, this); }
 
     public K getKey() { return null; }
 

@@ -4,7 +4,7 @@
 public interface Map<K extends Comparable<K>, V> {
 
     V get(K key);
-    Map<K, V> put(K key, V val, Map<K, V> bst);
+    Map<K, V> put(K key, V val);
     K getKey();
     V getVal();
     Map<K, V> getLeft();

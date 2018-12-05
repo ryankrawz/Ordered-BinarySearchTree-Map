@@ -38,16 +38,18 @@ public class MapC<K extends Comparable<K>, V> implements Map<K, V> {
         }
     }
 
+    public Map<K, V> put(K key, V val) { return putHelper(this, key, val); }
+
     // Parses with compareTo until available spot (indicated by NONE) is located, recursively links new tree to old tree
-    public Map<K, V> put(K key, V val, Map<K, V> bst) {
-        if (bst.equals(NONE)) { return new MapC<K, V>(key, val, NONE, NONE); }
+    private Map<K, V> putHelper(Map<K, V> bst, K key, V val) {
+        if (bst.equals(NONE)) return new MapC<K, V>(key, val, NONE, NONE);
         else {
             int comp = key.compareTo(bst.getKey());
             if (comp > 0) {
-                Map<K, V> newRight = put(key, val, bst.getRight());
+                Map<K, V> newRight = putHelper(bst.getRight(), key, val);
                 return new MapC<K, V>(bst.getKey(), bst.getVal(), bst.getLeft(), newRight);
             } else if (comp < 0) {
-                Map<K, V> newLeft = put(key, val, bst.getLeft());
+                Map<K, V> newLeft = putHelper(bst.getLeft(), key, val);
                 return new MapC<K, V>(bst.getKey(), bst.getVal(), newLeft, bst.getRight());
             } else {
                 return new MapC<K, V>(bst.getKey(), val, bst.getLeft(), bst.getRight());
@@ -93,7 +95,7 @@ public class MapC<K extends Comparable<K>, V> implements Map<K, V> {
         return minHelper(this);
     }
 
-    // Recursively walks left to locate min (employs relational invariant)
+    // Recursively walks left to locate minimum (employs relational invariant)
     private K minHelper(Map<K, V> bst) {
         if (bst.getLeft().equals(NONE))     return bst.getKey();
         else                                return minHelper(bst.getLeft());
@@ -175,9 +177,41 @@ public class MapC<K extends Comparable<K>, V> implements Map<K, V> {
         }
     }
 
-    public Map<K, V> deleteMin() { return null; }
+    public Map<K, V> deleteMin() {
+        checkEmpty();
+        return deleteMinHelper(this);
+    }
 
-    public Map<K, V> delete(K key) { return null; }
+    // Locates minimum with recursive walk left, sets minimum node to NONE
+    private Map<K, V> deleteMinHelper(Map<K, V> bst) {
+        if (bst.getLeft().equals(NONE)) return NONE;
+        else {
+            Map<K, V> newLeft = deleteMinHelper(bst.getLeft());
+            return new MapC<K, V>(bst.getKey(), bst.getVal(), newLeft, bst.getRight());
+        }
+    }
+
+    public Map<K, V> delete(K key) {
+        checkEmpty();
+        return deleteHelper(this, key);
+    }
+
+    // Locates key with compareTo, sets value to null in accordance with get(K key) returning null for a nonexistent key
+    private Map<K, V> deleteHelper(Map<K, V> bst, K key) {
+        if (bst.equals(NONE)) return NONE;
+        else {
+            int comp = key.compareTo(bst.getKey());
+            if (comp > 0) {
+                Map<K, V> newRight = deleteHelper(bst.getRight(), key);
+                return new MapC<K, V>(bst.getKey(), bst.getVal(), bst.getLeft(), newRight);
+            } else if (comp < 0) {
+                Map<K, V> newLeft = deleteHelper(bst.getLeft(), key);
+                return new MapC<K, V>(bst.getKey(), bst.getVal(), newLeft, bst.getRight());
+            } else {
+                return new MapC<K, V>(bst.getKey(), null, bst.getLeft(), bst.getRight());
+            }
+        }
+    }
 
     private boolean isLeaf(Map<K, V> bst) { return bst.getRight().equals(NONE) && bst.getLeft().equals(NONE); }
 
@@ -186,39 +220,47 @@ public class MapC<K extends Comparable<K>, V> implements Map<K, V> {
         Map<Integer, String> m1 = new EmptyMap<Integer, String>();
 
         // put(K key, V val)
-        Map<Integer, String> m2 = m1.put(4, "D", m1);
-        Map<Integer, String> m3 = m2.put(3, "C", m2);
-        Map<Integer, String> m4 = m3.put(5, "E", m3);
-        Map<Integer, String> m5 = m4.put(2, "B", m4);
-        Map<Integer, String> m6 = m5.put(6, "F", m5);
-        Map<Integer, String> m7 = m6.put(1, "A", m6);
-        Map<Integer, String> m8 = m7.put(7, "G", m7);
-        System.out.format("%nTest map after put:%s", m8.toString());
+        Map<Integer, String> m2 = m1.put(4, "D");
+        Map<Integer, String> m3 = m2.put(3, "C");
+        Map<Integer, String> m4 = m3.put(5, "E");
+        Map<Integer, String> m5 = m4.put(2, "B");
+        Map<Integer, String> m6 = m5.put(6, "F");
+        Map<Integer, String> m7 = m6.put(1, "A");
+        Map<Integer, String> m8 = m7.put(7, "G");
+        System.out.format("%nTest map:%s", m8.toString());
 
         // get(K key)
-        System.out.format("Getting value at key 4 from test map: %s%n%n", m8.get(4));
+        System.out.format("Value at key 4 is: %s", m8.get(4));
+        System.out.format("%nValue at key 2 is: %s", m8.get(2));
+        System.out.format("%nValue at key 7 is: %s%n%n", m8.get(7));
 
         // contains(K key)
-        System.out.format("Test map contains 1: %b", m8.contains(1));
-        System.out.format("%nTest map contains 8: %b%n%n", m8.contains(8));
+        System.out.format("Map contains 1: %b", m8.contains(1));
+        System.out.format("%nMap contains 8: %b", m8.contains(8));
+        System.out.format("%nMap contains 5: %b", m8.contains(5));
+        System.out.format("%nMap contains 11: %b%n%n", m8.contains(11));
 
         // min()
-        System.out.format("Min of test map: %d%n%n", m8.min());
+        System.out.format("Minimum of map is: %d%n%n", m8.min());
 
         // floor(K key)
-        System.out.format("Floor of 2 in test map: %d%n%n", m8.floor(2));
+        System.out.format("Floor of 2 is: %d", m8.floor(2));
+        System.out.format("%nFloor of 3 is: %d%n%n", m8.floor(3));
 
         // select(int n)
-        System.out.format("Selecting rank 5 from test map: %d%n%n", m8.select(5));
+        System.out.format("Key at rank 6 is: %d", m8.select(6));
+        System.out.format("%nKey at rank 4 is: %d%n%n", m8.select(4));
 
         // rank(K key)
-        System.out.format("Rank of key 3 from test map: %d%n%n", m8.rank(3));
+        System.out.format("Rank of key 4 is: %d", m8.rank(4));
+        System.out.format("%nRank of key 7 is: %d%n%n", m8.rank(7));
 
         // deleteMin()
-        System.out.format("After deleting min of test map:%s%n%n", m8.deleteMin().toString());
+        System.out.format("Test map after deleting minimum:%s", m8.deleteMin().toString());
 
         // delete(K key)
-        System.out.format("After deleting key 6 from test map:%s%n%n", m8.delete(6).toString());
+        System.out.format("Test map after deleting key 6:%s", m8.delete(6).toString());
+        System.out.format("Test map after deleting key 2:%s", m8.delete(2).toString());
     }
 
 }
